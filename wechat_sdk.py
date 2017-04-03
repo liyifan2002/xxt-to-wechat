@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
-import requests
-from conf import CORPID, CORPSECRET
+import urllib.request
+import config
 
 class ErrorCode(object):
     SUCCESS = 0
@@ -13,9 +13,9 @@ class WeChatEnterprise(object):
         """
             document address: http://qydev.weixin.qq.com/wiki/index.php?title=%E9%A6%96%E9%A1%B5
         """
-        self.corpid = CORPID
-        self.corpsecret = CORPSECRET
-        self.agentid = agentid
+        self.corpid = config.wx_corpid
+        self.corpsecret = config.wx_corpsecret
+        self.agentid = config.wx_agentid
         self.url_prefix = "https://qyapi.weixin.qq.com/cgi-bin"
         self.access_token = self.__get_access_token()
 
@@ -23,8 +23,8 @@ class WeChatEnterprise(object):
         # access_token 有效期为 7200秒
         # todo 缓存access_token
         url = "%s/gettoken?corpid=%s&corpsecret=%s" % (self.url_prefix, self.corpid, self.corpsecret)
-        res = requests.get(url)
-        access_token = res.json().get("access_token")
+        res =  urllib.request.urlopen(url).read().decode()
+        access_token = json.loads(res).get("access_token")
         return access_token
 
     @staticmethod
@@ -37,16 +37,16 @@ class WeChatEnterprise(object):
             return False, res
 
     def __post(self, url, data):
-        res = requests.post(url, data=json.dumps(data).decode('unicode-escape').encode("utf-8")).json()
-        return self.__response(res)
+        res = urllib.request.urlopen(url, data=json.dumps(data, ensure_ascii=False).encode()).read()
+        return self.__response(json.loads(res))
 
     def __get(self, url):
-        res = requests.get(url).json()
-        return self.__response(res)
+        res = urllib.request.urlopen(url).read()
+        return self.__response(json.loads(res))
 
     def __post_file(self, url, media_file):
-        res = requests.post(url, file=media_file).json()
-        return self.__response(res)
+        res = urllib.request.urlopen(url, data=media_file).read()
+        return self.__response(json.loads(res))
 
     # 部门管理
     def create_department(self, name, parentid=1, order=None):
