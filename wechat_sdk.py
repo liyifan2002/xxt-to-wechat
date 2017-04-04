@@ -23,12 +23,13 @@ class WeChatEnterprise(object):
         # access_token 有效期为 7200秒
         # todo 缓存access_token
         url = "%s/gettoken?corpid=%s&corpsecret=%s" % (self.url_prefix, self.corpid, self.corpsecret)
-        res =  urllib.request.urlopen(url).read().decode()
+        res =  self.__open(url).decode()
         access_token = json.loads(res).get("access_token")
         return access_token
 
     @staticmethod
-    def __response(res):
+    def __response(urlres):
+        res = json.loads(urlres.decode("utf-8"))
         errcode = res.get("errcode")
         # errmsg = res.get("errmsg")
         if errcode is ErrorCode.SUCCESS:
@@ -37,17 +38,20 @@ class WeChatEnterprise(object):
             return False, res
 
     def __post(self, url, data):
-        res = urllib.request.urlopen(url, data=json.dumps(data, ensure_ascii=False).encode()).read()
-        return self.__response(json.loads(res))
+        res = self.__open(url, data=json.dumps(data, ensure_ascii=False).encode())
+        return self.__response(res)
 
     def __get(self, url):
-        res = urllib.request.urlopen(url).read()
-        return self.__response(json.loads(res))
+        res = self.__open(url)
+        return self.__response(res)
 
     def __post_file(self, url, media_file):
-        res = urllib.request.urlopen(url, data=media_file).read()
-        return self.__response(json.loads(res))
+        res = self.__open(url, data=media_file)
+        return self.__response(res)
 
+    def __open(self, url, data=None):
+        res = urllib.request.urlopen(url,data=data)
+        return res.read()
     # 部门管理
     def create_department(self, name, parentid=1, order=None):
         """
