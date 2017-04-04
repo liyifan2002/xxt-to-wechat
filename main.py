@@ -34,6 +34,11 @@ received_res = opener.open(get_url)
 received = received_res.read().decode("gbk")
 msgs = re.findall("<span class=\"msgContent\">(.*?)</span>",received,re.S)
 msgs.reverse()
-for msg in msgs:
-    wx.send_msg_to_user(msg,touser=["YifanLi"])
-print(msgs,)
+fl = open('history.txt', 'r+')
+history = fl.read()
+history = history.split("|\n")[:-1]
+new = set(msgs)^set(history)
+for msg in new:
+	wx.send_msg_to_user(msg,touser=["YifanLi"])
+	fl.write(msg)
+	fl.write("|\n")
