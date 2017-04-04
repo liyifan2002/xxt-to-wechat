@@ -39,6 +39,6 @@ history = fl.read()
 history = history.split("|\n")[:-1]
 new = set(msgs)^set(history)
 for msg in new:
-	wx.send_msg_to_user(msg,touser=["YifanLi"])
+	wx.send_msg_to_user(msg,touser=config.wx_sendto)
 	fl.write(msg)
 	fl.write("|\n")
